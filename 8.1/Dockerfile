@@ -6,13 +6,13 @@ ARG IGNITION_RC_VERSION=""
 # Default Build Edition - STABLE or NIGHTLY
 ARG BUILD_EDITION="STABLE"
 
-FROM ubuntu:latest AS downloader
-LABEL maintainer "Kevin Collins <kcollins@purelinux.net>"
+FROM registry.access.redhat.com/ubi8/ubi:latest AS downloader
+LABEL maintainer "Ken Lee <kelee@redhat.com>"
 ARG IGNITION_VERSION
 ARG BUILD_EDITION
 
 # Install some prerequisite packages
-RUN apt-get update && apt-get install -y wget unzip
+RUN dnf update -y && dnf install -y wget unzip
 
 # Ignition Downloader Parameters
 ARG IGNITION_STABLE_AMD64_DOWNLOAD_URL="https://files.inductiveautomation.com/release/ia/8.1.10/20210908-1153/Ignition-linux-64-8.1.10.zip"
@@ -57,7 +57,8 @@ SHELL [ "/bin/bash", "-c" ]
 
 # Download Installation Zip File based on Detected Architecture
 RUN set -exo pipefail; \
-    dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
+    # dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
+    dpkg_arch="$(echo amd64 | awk '{print toupper($0)}')";    \
     download_url_env="IGNITION_${BUILD_EDITION}_${dpkg_arch}_DOWNLOAD_URL"; \
     download_sha256_env="IGNITION_${BUILD_EDITION}_${dpkg_arch}_DOWNLOAD_SHA256"; \
     if [ -n "${!download_url_env}" ] && [ -n "${!download_sha256_env}" ]; then \
@@ -70,7 +71,8 @@ RUN set -exo pipefail; \
 
 # Download gosu based on Detected Architecture
 RUN set -exo pipefail; \
-    dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
+    # dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
+    dpkg_arch="$(echo amd64 | awk '{print toupper($0)}')";    \
     download_url_env="GOSU_${dpkg_arch}_DOWNLOAD_URL"; \
     download_sha256_env="GOSU_${dpkg_arch}_DOWNLOAD_SHA256"; \
     if [[ -n "${!download_url_env}" ]] && [[ -n "${!download_sha256_env}" ]]; then \
@@ -107,20 +109,21 @@ RUN mkdir -p /var/lib/ignition && \
     ln -s /var/lib/ignition/data/metro-keystore webserver/metro-keystore
 
 # Extract embedded Java based on architecture
-RUN set -exo pipefail; \
-    dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
-    jre_suffix_env="IGNITION_${dpkg_arch}_JRE_SUFFIX"; \
-    if [ -n "${!jre_suffix_env}" ]; then \
-        ./ignition.sh checkRuntimes && \
-        ln -s jre-${!jre_suffix_env} lib/runtime/jre; \
-    else \
-        echo "Architecture ${dpkg_arch} JRE suffix target not defined, aborting build"; \
-        exit 1; \
-    fi
+# RUN set -exo pipefail; \
+#     # dpkg_arch="$(dpkg --print-architecture | awk '{print toupper($0)}')"; \
+#     dpkg_arch="$(echo amd64 | awk '{print toupper($0)}')";   \
+#     jre_suffix_env="IGNITION_${dpkg_arch}_JRE_SUFFIX"; \
+#     if [ -n "${!jre_suffix_env}" ]; then \
+#         ./ignition.sh checkRuntimes && \
+#         ln -s jre-${!jre_suffix_env} lib/runtime/jre; \
+#     else \
+#         echo "Architecture ${dpkg_arch} JRE suffix target not defined, aborting build"; \
+#         exit 1; \
+#     fi
 
-# RUNTIME IMAGE
-FROM ubuntu:20.04 as final
-LABEL maintainer "Kevin Collins <kcollins@purelinux.net>"
+# # RUNTIME IMAGE
+FROM registry.access.redhat.com/ubi8/ubi:latest AS final
+LABEL maintainer "Ken Lee <kelee@redhat.com>"
 ARG IGNITION_VERSION
 ARG BUILD_EDITION
 
@@ -128,13 +131,21 @@ ARG BUILD_EDITION
 ENV BUILD_EDITION ${BUILD_EDITION:-FULL}
 
 # Install some prerequisite packages
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        curl gettext procps pwgen zip unzip sqlite3 fontconfig fonts-dejavu jq tini locales && \
-    rm -rf /var/lib/apt/lists/* && \
-    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    dpkg-reconfigure --frontend=noninteractive locales && \
-    update-locale LANG=en_US.UTF-8
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+#         curl gettext procps pwgen zip unzip sqlite3 fontconfig fonts-dejavu jq tini locales && \
+#     rm -rf /var/lib/apt/lists/* && \
+#     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+#     dpkg-reconfigure --frontend=noninteractive locales && \
+#     update-locale LANG=en_US.UTF-8
+
+RUN dnf update -y && \
+    dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
+    dnf install -y curl gettext procps pwgen zip unzip fontconfig jq tini sqlite dejavu-sans-fonts glibc-locale-source glibc-langpack-en java-11-openjdk && \
+    localedef -c -f UTF-8 -i en_US en_US.UTF-8
+# update-locale LANG=en_US.UTF-8
+#locales
+
 
 # Setup Install Targets and Locale Settings
 ENV IGNITION_INSTALL_LOCATION="/usr/local/share/ignition" \
@@ -144,15 +155,22 @@ ENV IGNITION_INSTALL_LOCATION="/usr/local/share/ignition" \
 # Build Arguments for UID/GID
 ARG IGNITION_UID
 ARG IGNITION_GID
-ENV IGNITION_UID=${IGNITION_UID:-999} \
-    IGNITION_GID=${IGNITION_GID:-999}
+ENV IGNITION_UID=${IGNITION_UID:-777} \
+    IGNITION_GID=${IGNITION_GID:-777}
 
 # Setup dedicated user, map file permissions, and set execution flags
+# RUN mkdir ${IGNITION_INSTALL_USERHOME} && \
+#     (getent group ${IGNITION_GID} > /dev/null 2>&1 || groupadd -r ignition -g ${IGNITION_GID}) && \
+#     (getent passwd ${IGNITION_UID} > /dev/null 2>&1 || useradd -r -d ${IGNITION_INSTALL_USERHOME} -u ${IGNITION_UID} -g ${IGNITION_GID} ignition) && \
+#     chown ${IGNITION_UID}:${IGNITION_GID} ${IGNITION_INSTALL_USERHOME} && \
+#     mkdir -p /data && chown ${IGNITION_UID}:${IGNITION_GID} /data
+
 RUN mkdir ${IGNITION_INSTALL_USERHOME} && \
-    (getent group ${IGNITION_GID} > /dev/null 2>&1 || groupadd -r ignition -g ${IGNITION_GID}) && \
-    (getent passwd ${IGNITION_UID} > /dev/null 2>&1 || useradd -r -d ${IGNITION_INSTALL_USERHOME} -u ${IGNITION_UID} -g ${IGNITION_GID} ignition) && \
+    (groupadd -r ignition -g ${IGNITION_GID}) && \
+    (useradd -r -d ${IGNITION_INSTALL_USERHOME} -u ${IGNITION_UID} -g ${IGNITION_GID} ignition) && \
     chown ${IGNITION_UID}:${IGNITION_GID} ${IGNITION_INSTALL_USERHOME} && \
     mkdir -p /data && chown ${IGNITION_UID}:${IGNITION_GID} /data
+
 
 # Copy Ignition Installation from Build Image
 COPY --chown=${IGNITION_UID}:${IGNITION_GID} --from=downloader /root/ignition ${IGNITION_INSTALL_LOCATION}

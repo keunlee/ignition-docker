@@ -12,7 +12,9 @@ BASE_WRAPPER_OPTIONS=(
     "wrapper.logfile.format=PTM"
     "wrapper.logfile.rollmode=NONE"
 )
-WRAPPER_OPTIONS=( )
+WRAPPER_OPTIONS=(
+    "wrapper.java.command=java"
+)
 JVM_OPTIONS=( )
 APP_OPTIONS=( )
 GATEWAY_MODULE_RELINK=${GATEWAY_MODULE_RELINK:-false}
