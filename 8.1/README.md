@@ -32,3 +32,39 @@ There is some potential additional setup that you need to perform to get your en
 If you need to target a different registry, just override the `BASE_IMAGE_NAME` like below:
 
     $ make multibuild BASE_IMAGE_NAME=myregistry:5000/kcollins/ignition
+
+## Start an Ignition Maker Edition gateway instance (UBI Image)
+
+To run the Ignition Maker Edition variant, supply some additional environment variables with the container launch. You'll need to acquire a Maker Edition license from Inductive Automation to use this image variant. More information [here](https://inductiveautomation.com/ignition/maker-edition).
+
+- `IGNITION_EDITION=maker` - Specifies Maker Edition
+- `IGNITION_LICENSE_KEY=ABCD_1234` - Supply your license key
+- `IGNITION_ACTIVATION_TOKEN=xxxxxxx` - Supply your activation token
+
+Run the container with these extra environment variables:
+
+```bash
+podman run -p 8088:8088 \
+--name my-ignition-maker --privileged \ 
+-e GATEWAY_ADMIN_PASSWORD=password \
+-e IGNITION_EDITION=maker \ 
+-e IGNITION_LICENSE_KEY=ABCD_1234 \
+-e IGNITION_ACTIVATION_TOKEN=asdfghjkl \
+-d quay.io/kelee/ignition-maker-ubi:8.1.10
+```
+
+You can also place the activation token and/or license key in a file that is either integrated with Docker Secrets (via Docker Compose or Swarm) or simply bind-mounted into the container. Appending _FILE to the environment variables causes the value to be read in from the declared file location. If we have a file containing our activation token named activation-token, we can run the container like below:
+
+```bash
+podman run -p 8088:8088 \ 
+--name my-ignition-maker --privileged \
+-e GATEWAY_ADMIN_PASSWORD=password \
+-e IGNITION_EDITION=maker \
+-e IGNITION_LICENSE_KEY=ABCD_1234 \
+-v /path/to/activation-token:/activation-token \
+-e IGNITION_ACTIVATION_TOKEN_FILE=/activation-token \
+-d quay.io/kelee/ignition-maker-ubi:8.1.10
+```
+
+
+

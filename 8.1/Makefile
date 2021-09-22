@@ -8,10 +8,15 @@ IGNITION_RC_VERSION:=$$(grep -Po '(?<=IGNITION_RC_VERSION=\")((\d\.){2}\d+-rc\d)
 # Pull in base options (if called from this directory)
 include ../.env
 
+.build-ubi8-podman:
+	@echo "======== BUILDING IGNITION IMAGE LOCALLY (SINGLE ARCHITECTURE) ========"
+	$(IGNITION_VERSION_CHECK)
+	podman build ${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_ARGS} --format docker --build-arg BUILD_EDITION=STABLE -t ${BASE_IMAGE_NAME}:${IGNITION_VERSION} -f Dockerfile.ubi8 .
+
 .build-ubi8:
 	@echo "======== BUILDING IGNITION IMAGE LOCALLY (SINGLE ARCHITECTURE) ========"
 	$(IGNITION_VERSION_CHECK)
-	docker build ${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_ARGS} --build-arg BUILD_EDITION=STABLE -t ${BASE_IMAGE_NAME}:${IGNITION_VERSION} -f Dockerfile .
+	docker build ${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_ARGS} --build-arg BUILD_EDITION=STABLE -t ${BASE_IMAGE_NAME}:${IGNITION_VERSION} -f Dockerfile.ubi8 .
 
 .build:
 	@echo "======== BUILDING IGNITION IMAGE LOCALLY (SINGLE ARCHITECTURE) ========"
@@ -68,6 +73,7 @@ all:
 	@echo "Please specify a build target: build, multibuild, build-rc, multibuild-rc, build-nightly, multibuild-nightly"
 
 build: .build
+build-ubi8-podman: .build-ubi8-podman
 build-ubi8: .build-ubi8
 build-rc: .build-rc
 build-nightly: .build-nightly
