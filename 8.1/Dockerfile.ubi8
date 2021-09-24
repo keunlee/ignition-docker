@@ -121,11 +121,11 @@ RUN mkdir -p /var/lib/ignition && \
 #         exit 1; \
 #     fi
 
-# # RUNTIME IMAGE
-FROM registry.access.redhat.com/ubi8/ubi:latest AS final
-LABEL maintainer "Ken Lee <kelee@redhat.com>"
-ARG IGNITION_VERSION
-ARG BUILD_EDITION
+# # # RUNTIME IMAGE
+# FROM registry.access.redhat.com/ubi8/ubi:latest AS final
+# LABEL maintainer "Ken Lee <kelee@redhat.com>"
+# ARG IGNITION_VERSION
+# ARG BUILD_EDITION
 
 # Capture BUILD_EDITION into environment variable
 ENV BUILD_EDITION ${BUILD_EDITION:-FULL}
@@ -137,7 +137,8 @@ RUN dnf update -y && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8
 
 # Setup Install Targets and Locale Settings
-ENV IGNITION_DATA_LOCATION="/var/lib/ignition/" \
+ENV IGNITION_LIB_LOCATION="/var/lib/ignition/" \
+    IGNITION_VAR_LOCATION="/var/var/ignition/" \
     IGNITION_INSTALL_LOCATION="/usr/local/share/ignition" \
     IGNITION_INSTALL_USERHOME="/home/ignition" \
     LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
@@ -182,9 +183,9 @@ RUN chgrp -R 0 ${IGNITION_DATA_LOCATION} && \
     chmod -R g=u ${IGNITION_DATA_LOCATION} && \
     chown -R 1001:0 ${IGNITION_DATA_LOCATION}
 
-RUN chgrp -R 0 ${IGNITION_INSTALL_USERHOME} && \
-    chmod -R g=u ${IGNITION_INSTALL_USERHOME} && \
-    chown -R 1001:0 ${IGNITION_INSTALL_USERHOME}
+RUN chgrp -R 0 ${IGNITION_VAR_LOCATION} && \
+    chmod -R g=u ${IGNITION_VAR_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_VAR_LOCATION}
 
 USER 1001
 
