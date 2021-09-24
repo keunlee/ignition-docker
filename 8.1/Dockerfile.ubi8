@@ -173,6 +173,9 @@ EXPOSE 8088
 USER root
 WORKDIR ${IGNITION_INSTALL_LOCATION}
 
+RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
+    chmod -R g=u ${IGNITION_INSTALL_LOCATION}
+
 # Update path to include embedded java install location
 ENV PATH="${IGNITION_INSTALL_LOCATION}/lib/runtime/jre/bin:${PATH}"
 
