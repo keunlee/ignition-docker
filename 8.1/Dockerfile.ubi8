@@ -167,7 +167,7 @@ RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
     chmod -R g=u ${IGNITION_LIB_LOCATION} && \
     # chown -R 1001:0 ${IGNITION_LIB_LOCATION} && \
     chgrp -R 0 ${IGNITION_LOG_LOCATION} && \
-    chmod -R g=u ${IGNITION_LOG_LOCATION} && \
+    chmod -R g=u ${IGNITION_LOG_LOCATION}
     # chown -R 1001:0 ${IGNITION_LOG_LOCATION}
 
 # Update path to include embedded java install location
