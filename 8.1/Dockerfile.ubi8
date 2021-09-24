@@ -6,8 +6,7 @@ ARG IGNITION_RC_VERSION=""
 # Default Build Edition - STABLE or NIGHTLY
 ARG BUILD_EDITION="STABLE"
 
-# FROM registry.access.redhat.com/ubi8/ubi:latest AS downloader
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM registry.access.redhat.com/ubi8/ubi:latest AS downloader
 LABEL maintainer "Ken Lee <kelee@redhat.com>"
 ARG IGNITION_VERSION
 ARG BUILD_EDITION
@@ -122,11 +121,11 @@ RUN mkdir -p /var/lib/ignition && \
 #         exit 1; \
 #     fi
 
-# # # RUNTIME IMAGE
+# # RUNTIME IMAGE
 # FROM registry.access.redhat.com/ubi8/ubi:latest AS final
-# LABEL maintainer "Ken Lee <kelee@redhat.com>"
-# ARG IGNITION_VERSION
-# ARG BUILD_EDITION
+FROM downloader as final
+ARG IGNITION_VERSION
+ARG BUILD_EDITION
 
 # Capture BUILD_EDITION into environment variable
 ENV BUILD_EDITION ${BUILD_EDITION:-FULL}
