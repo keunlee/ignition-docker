@@ -132,8 +132,8 @@ ENV IGNITION_LIB_LOCATION="/var/lib/ignition/" \
 # Build Arguments for UID/GID
 ARG IGNITION_UID
 ARG IGNITION_GID
-ENV IGNITION_UID=${IGNITION_UID:-777} \
-    IGNITION_GID=${IGNITION_GID:-777}
+ENV IGNITION_UID=1001 \
+    IGNITION_GID=0
 
 # Setup dedicated user, map file permissions, and set execution flags
 RUN mkdir ${IGNITION_INSTALL_USERHOME} && \
@@ -162,13 +162,13 @@ WORKDIR ${IGNITION_INSTALL_LOCATION}
 
 RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
     chmod -R g=u ${IGNITION_INSTALL_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_INSTALL_LOCATION} && \
+    # chown -R 1001:0 ${IGNITION_INSTALL_LOCATION} && \
     chgrp -R 0 ${IGNITION_LIB_LOCATION} && \
     chmod -R g=u ${IGNITION_LIB_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_LIB_LOCATION} && \
+    # chown -R 1001:0 ${IGNITION_LIB_LOCATION} && \
     chgrp -R 0 ${IGNITION_LOG_LOCATION} && \
     chmod -R g=u ${IGNITION_LOG_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_LOG_LOCATION}
+    # chown -R 1001:0 ${IGNITION_LOG_LOCATION}
 
 # Update path to include embedded java install location
 ENV PATH="${IGNITION_INSTALL_LOCATION}/lib/runtime/jre/bin:${PATH}"
