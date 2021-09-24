@@ -164,9 +164,9 @@ RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
     chmod -R g=u ${IGNITION_INSTALL_LOCATION} && \
     chown -R 1001:0 ${IGNITION_INSTALL_LOCATION}
 
-RUN chgrp -R 0 ${IGNITION_DATA_LOCATION} && \
-    chmod -R g=u ${IGNITION_DATA_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_DATA_LOCATION}
+RUN chgrp -R 0 ${IGNITION_LIB_LOCATION} && \
+    chmod -R g=u ${IGNITION_LIB_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_LIB_LOCATION}
 
 RUN chgrp -R 0 ${IGNITION_LOG_LOCATION} && \
     chmod -R g=u ${IGNITION_LOG_LOCATION} && \
