@@ -137,7 +137,7 @@ ENV IGNITION_UID=1001 \
 
 # Setup dedicated user, map file permissions, and set execution flags
 RUN mkdir ${IGNITION_INSTALL_USERHOME} && \
-    (groupadd -r ignition -g ${IGNITION_GID}) && \
+    # (groupadd -r ignition -g ${IGNITION_GID}) && \
     (useradd -r -d ${IGNITION_INSTALL_USERHOME} -u ${IGNITION_UID} -g ${IGNITION_GID} ignition) && \
     chown ${IGNITION_UID}:${IGNITION_GID} ${IGNITION_INSTALL_USERHOME} && \
     mkdir -p /data && chown ${IGNITION_UID}:${IGNITION_GID} /data
