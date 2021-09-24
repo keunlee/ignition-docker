@@ -170,15 +170,15 @@ HEALTHCHECK --interval=10s --start-period=60s --timeout=3s \
 EXPOSE 8088
 
 # Launch Ignition
-# USER root
-# WORKDIR ${IGNITION_INSTALL_LOCATION}
+USER root
+WORKDIR ${IGNITION_INSTALL_LOCATION}
 
 RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
     chmod -R g=u ${IGNITION_INSTALL_LOCATION}
 
-USER 1001
 RUN chown -R 1001:0 ${IGNITION_INSTALL_LOCATION}
-WORKDIR ${IGNITION_INSTALL_LOCATION}
+
+USER 1001
 
 # Update path to include embedded java install location
 ENV PATH="${IGNITION_INSTALL_LOCATION}/lib/runtime/jre/bin:${PATH}"
