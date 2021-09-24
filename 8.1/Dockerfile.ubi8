@@ -12,7 +12,7 @@ ARG IGNITION_VERSION
 ARG BUILD_EDITION
 
 # Install some prerequisite packages
-RUN dnf update -y && dnf install -y wget unzip
+RUN dnf update -y && dnf install -y wget unzip && dnf -y clean all
 
 # Ignition Downloader Parameters
 ARG IGNITION_STABLE_AMD64_DOWNLOAD_URL="https://files.inductiveautomation.com/release/ia/8.1.10/20210908-1153/Ignition-linux-64-8.1.10.zip"
@@ -119,6 +119,7 @@ ENV BUILD_EDITION ${BUILD_EDITION:-FULL}
 RUN dnf update -y && \
     dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
     dnf install -y curl gettext procps pwgen zip unzip fontconfig jq tini sqlite dejavu-sans-fonts glibc-locale-source glibc-langpack-en java-11-openjdk && \
+    dnf -y clean all && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8
 
 # Setup Install Targets and Locale Settings
@@ -141,7 +142,6 @@ RUN mkdir ${IGNITION_INSTALL_USERHOME} && \
     chown ${IGNITION_UID}:${IGNITION_GID} ${IGNITION_INSTALL_USERHOME} && \
     mkdir -p /data && chown ${IGNITION_UID}:${IGNITION_GID} /data
 
-
 # Copy Ignition Installation from Build Image
 COPY --chown=${IGNITION_UID}:${IGNITION_GID} --from=downloader /root/ignition ${IGNITION_INSTALL_LOCATION}
 COPY --chown=${IGNITION_UID}:${IGNITION_GID} --from=downloader /var/lib/ignition /var/lib/ignition
@@ -162,13 +162,11 @@ WORKDIR ${IGNITION_INSTALL_LOCATION}
 
 RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
     chmod -R g=u ${IGNITION_INSTALL_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_INSTALL_LOCATION}
-
-RUN chgrp -R 0 ${IGNITION_LIB_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_INSTALL_LOCATION} && \
+    chgrp -R 0 ${IGNITION_LIB_LOCATION} && \
     chmod -R g=u ${IGNITION_LIB_LOCATION} && \
-    chown -R 1001:0 ${IGNITION_LIB_LOCATION}
-
-RUN chgrp -R 0 ${IGNITION_LOG_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_LIB_LOCATION} && \
+    chgrp -R 0 ${IGNITION_LOG_LOCATION} && \
     chmod -R g=u ${IGNITION_LOG_LOCATION} && \
     chown -R 1001:0 ${IGNITION_LOG_LOCATION}
 
