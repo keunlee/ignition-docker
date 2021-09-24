@@ -137,7 +137,8 @@ RUN dnf update -y && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8
 
 # Setup Install Targets and Locale Settings
-ENV IGNITION_INSTALL_LOCATION="/usr/local/share/ignition" \
+ENV IGNITION_DATA_LOCATION="/var/lib/ignition/" \
+    IGNITION_INSTALL_LOCATION="/usr/local/share/ignition" \
     IGNITION_INSTALL_USERHOME="/home/ignition" \
     LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
@@ -174,9 +175,16 @@ USER root
 WORKDIR ${IGNITION_INSTALL_LOCATION}
 
 RUN chgrp -R 0 ${IGNITION_INSTALL_LOCATION} && \
-    chmod -R g=u ${IGNITION_INSTALL_LOCATION}
+    chmod -R g=u ${IGNITION_INSTALL_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_INSTALL_LOCATION}
 
-RUN chown -R 1001:0 ${IGNITION_INSTALL_LOCATION}
+RUN chgrp -R 0 ${IGNITION_DATA_LOCATION} && \
+    chmod -R g=u ${IGNITION_DATA_LOCATION} && \
+    chown -R 1001:0 ${IGNITION_DATA_LOCATION}
+
+RUN chgrp -R 0 ${IGNITION_INSTALL_USERHOME} && \
+    chmod -R g=u ${IGNITION_INSTALL_USERHOME} && \
+    chown -R 1001:0 ${IGNITION_INSTALL_USERHOME}
 
 USER 1001
 
